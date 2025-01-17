@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>予約入力</title>
+</head>
+<body>
+    <h1>予約入力</h1>
+    <form method="post" th:action="@{/houses/__${stores.id}__/reserves/confirm}" th:object="${reserveInputForm}">
+    <!-- 予約日 -->
+    <div class="form-group mb-2">
+        <label for="fromCheckinDate" class="fw-bold">ご予約日</label>
+        <input type="text" class="form-control" th:field="*{fromCheckinDate}" placeholder="YYYY-MM-DD" />
+    </div>
+
+    <!-- 予約時間 -->
+    <div class="form-group mb-2">
+        <label for="fromCheckinTime" class="fw-bold">ご予約時間</label>
+        <input type="text" class="form-control" th:field="*{fromCheckinTime}" placeholder="HH:MM" />
+    </div>
+
+    <!-- 予約人数 -->
+    <div class="form-group mb-4">
+        <label for="numberOfPeople" class="fw-bold">ご予約人数</label>
+        <input type="number" class="form-control" th:field="*{numberOfPeople}" min="1" />
+    </div>
+
+    <!-- 送信ボタン -->
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary w-100">確認する</button>
+    </div>
+</form>
+</body>
+</html>
