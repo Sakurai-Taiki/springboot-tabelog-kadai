@@ -53,6 +53,7 @@ INSERT IGNORE INTO reserve (user_id, store_id, checkin_date, checkin_time, numbe
 
 -- レビューテーブル
 INSERT IGNORE INTO reviews (score, content, user_id, store_id) VALUES  (5, '絶品料理！', 5, 1);
+INSERT IGNORE INTO reviews (score, content, user_id, store_id) VALUES  (1, '最低料理！', 2, 1);
 
 -- お気に入りテーブル
 INSERT IGNORE INTO favorite (user_id, store_id) VALUES (5, 1);
