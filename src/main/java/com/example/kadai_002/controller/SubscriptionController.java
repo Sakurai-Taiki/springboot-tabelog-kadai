@@ -1,22 +1,25 @@
 package com.example.kadai_002.controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import com.stripe.Stripe;
-import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Subscription;
-import com.stripe.model.checkout.Session;
-import com.stripe.param.CustomerCreateParams;
-import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.model.billingportal.Session;
+import com.stripe.param.CustomerListParams;
+import com.stripe.param.billingportal.SessionCreateParams;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 public class SubscriptionController {
@@ -24,97 +27,114 @@ public class SubscriptionController {
     @Value("${stripe.api-key}")
     private String stripeApiKey;
 
-    /**
-     * サブスクリプション登録ページの表示 (GETメソッド)
-     */
-    @GetMapping("/subscription")
-    public String showSubscriptionPage() {
-        return "subscription/index"; 
-    }
-
-    /**
-     * サブスクリプションのCheckoutセッションを作成 (POSTメソッド)
-     */
-    @PostMapping("/create-checkout-session")
-    public ResponseEntity<Map<String, String>> createCheckoutSession(@RequestBody Map<String, Object> requestBody) {
+    @GetMapping("/customer-portal")
+    public void redirectToCustomerPortal(HttpServletResponse response) {
         Stripe.apiKey = stripeApiKey;
 
         try {
-            // 顧客名を受け取る
-            String customerName = (String) requestBody.get("name");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userId = authentication.getName();
 
-            // Stripeの顧客を作成
-            CustomerCreateParams customerParams = CustomerCreateParams.builder()
-                .setName(customerName)
-                .build();
+            String customerId = findCustomerIdByUserId(userId);
 
-            Customer customer = Customer.create(customerParams);
-
-            // Stripeの価格IDを設定
-            String priceId = "price_1QgiLi7vXAaoTR5x3nY3tE0o";
-
-            // Checkoutセッションの作成
             SessionCreateParams params = SessionCreateParams.builder()
-                .setCustomer(customer.getId()) // 顧客IDを指定
-                .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                .setSuccessUrl("http://localhost:8081/subscription/success?session_id={CHECKOUT_SESSION_ID}")
-                .setCancelUrl("http://localhost:8081/subscription/cancel")
-                .addLineItem(
-                    SessionCreateParams.LineItem.builder()
-                        .setPrice(priceId) // 価格ID
-                        .setQuantity(1L) // 数量
-                        .build()
-                )
+                .setCustomer(customerId)
+                .setReturnUrl("http://localhost:8080/")
                 .build();
 
             Session session = Session.create(params);
-
-            // セッションIDを返す
-            Map<String, String> responseData = new HashMap<>();
-            responseData.put("sessionId", session.getId());
-            return ResponseEntity.ok(responseData);
-
+            response.sendRedirect(session.getUrl());
         } catch (Exception e) {
-            // エラーハンドリング
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Checkout session creation failed: " + e.getMessage());
-            return ResponseEntity.status(500).body(errorResponse);
-        }
-    }
-
-    /**
-     * サブスクリプションの解約処理 (POSTメソッド)
-     */
-    @PostMapping("/subscription/cancel")
-    public ResponseEntity<Map<String, String>> cancelSubscription(@RequestBody Map<String, String> requestBody) {
-        Stripe.apiKey = stripeApiKey;
-
-        String subscriptionId = requestBody.get("subscriptionId");
-
-        try {
-            // Stripeサブスクリプションの解約
-            Subscription subscription = Subscription.retrieve(subscriptionId);
-            subscription.cancel();
-
-            // 成功レスポンスを返す
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "success");
-            response.put("redirectUrl", "/"); // トップページへのリダイレクトURLを含む
-            return ResponseEntity.ok(response);
-
-        } catch (StripeException e) {
-            // 解約失敗時のレスポンス
             e.printStackTrace();
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "error");
-            response.put("message", "サブスクリプションの解約に失敗しました: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
+            try {
+                response.sendRedirect("/error?message=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8.toString()));
+            } catch (Exception redirectException) {
+                redirectException.printStackTrace();
+            }
         }
     }
-   
-    @GetMapping("/subscription/cancel")
-    public String showCancelPage() {
-        return "subscription/cancel"; // templates/subscription/cancel.html
+
+    private String findCustomerIdByUserId(String userId) throws Exception {
+        String startingAfter = null;
+
+        while (true) {
+            CustomerListParams.Builder paramsBuilder = CustomerListParams.builder().setLimit((long) 100);
+            if (startingAfter != null) {
+                paramsBuilder.setStartingAfter(startingAfter);
+            }
+
+            List<Customer> customers = Customer.list(paramsBuilder.build()).getData();
+
+            for (Customer customer : customers) {
+                if (customer.getMetadata() != null && userId.equals(customer.getMetadata().get("userId"))) {
+                    return customer.getId();
+                }
+            }
+
+            if (customers.isEmpty()) {
+                break;
+            }
+
+            startingAfter = customers.get(customers.size() - 1).getId();
+        }
+
+        return createNewStripeCustomer(userId);
     }
-    
+
+    private String createNewStripeCustomer(String userId) throws Exception {
+        // メールアドレスを設定
+        String email = userId.contains("@") ? userId : userId + "@example.com";
+
+        // メタデータに userId を保存
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("userId", userId);
+
+        // Stripe 顧客作成用パラメータ
+        Map<String, Object> createParams = new HashMap<>();
+        createParams.put("email", email); // 適切なメールアドレスを設定
+        createParams.put("metadata", metadata);
+
+        // Stripe 顧客を作成
+        Customer newCustomer = Customer.create(createParams);
+
+        System.out.println("新規 Stripe 顧客が作成されました: " + newCustomer.getId());
+        return newCustomer.getId(); // 新しく作成した顧客 ID を返す
+    }
+
+    @GetMapping("/cancel-subscription")
+    public void cancelSubscription(HttpServletResponse response) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userId = authentication.getName();
+
+            String customerId = findCustomerIdByUserId(userId);
+            cancelAllSubscriptions(customerId);
+
+            response.sendRedirect("/subscription-cancelled-successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                String errorMessage = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8.toString());
+                response.sendRedirect("/error?message=" + errorMessage);
+            } catch (Exception redirectException) {
+                redirectException.printStackTrace();
+            }
+        }
+    }
+
+    private void cancelAllSubscriptions(String customerId) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        params.put("customer", customerId);
+
+        List<Subscription> subscriptions = Subscription.list(params).getData();
+
+        if (subscriptions.isEmpty()) {
+            throw new Exception("顧客IDに対応するサブスクリプションが見つかりませんでした");
+        }
+
+        for (Subscription subscription : subscriptions) {
+            subscription.cancel();
+        }
+    }
 }
+
