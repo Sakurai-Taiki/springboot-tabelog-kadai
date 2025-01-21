@@ -24,6 +24,16 @@
 					ログアウトしました。
 				</div>
 
+				<!-- 登録成功時のメッセージ -->
+				<div th:if="${param.message == 'subscription_success'}" class="alert alert-success" role="alert">
+					サブスクリプション登録が完了しました！
+				</div>
+
+				<!-- 登録失敗時のメッセージ -->
+				<div th:if="${param.message == 'subscription_failed'}" class="alert alert-danger" role="alert">
+					サブスクリプション登録に失敗しました。もう一度お試しください。
+				</div>
+
 
 				<div class="d-flex justify-content-center">
 					<form method="get" th:action="@{/houses}" class="mb-5 nagoyameshi-search-form">
@@ -36,7 +46,7 @@
 				</div>
 
 
-				
+
 				<div class="card mb-3">
 					<div class="card-header">
 						カテゴリから探す
