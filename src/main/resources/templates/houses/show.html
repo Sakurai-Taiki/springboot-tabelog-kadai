@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+	<div th:replace="~{fragment :: meta}"></div>
+	<div th:replace="~{fragment :: styles}"></div>
+
+	<!-- Flatpickr -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+	<title>店舗詳細</title>
+
+</head>
+
+<body>
+	<div class="nagoyameshi-wrapper">
+		<div th:replace="~{fragment :: header}"></div>
+
+		<main>
+			<div class="container pt-4 pb-5 nagoyameshi-container">
+				<div class="row justify-content-center">
+					<div class="col-xxl-9 col-xl-10 col-lg-11">
+						<div class="d-flex justify-content-between mb-4">
+							<nav class="mb-4" style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+								<ol class="breadcrumb mb-0">
+									<li class="breadcrumb-item"><a th:href="@{/}">ホーム</a></li>
+									<li class="breadcrumb-item"><a th:href="@{/houses}">店舗一覧</a></li>
+									<li class="breadcrumb-item active" aria-current="page">店舗詳細</li>
+								</ol>
+							</nav>
+
+
+							<!-- お気に入りセクション -->
+							<div sec:authorize="isAuthenticated()">
+								<div th:if="${isFavorite}">
+									<a href="#"
+										onclick="event.preventDefault(); document.getElementById('favorite-form-remove').submit();">
+										&#9829; お気に入り解除
+									</a>
+									<form method="post"
+										th:action="@{/houses/{houseId}/favorite/{favoriteId}/delete(houseId=${stores.id}, favoriteId=${favorite.id})}"
+										id="favorite-form-remove" class="d-none"></form>
+								</div>
+								<div th:unless="${isFavorite}">
+									<a href="#"
+										onclick="event.preventDefault(); document.getElementById('favorite-form-add').submit();">
+										&#9825; お気に入り追加
+									</a>
+									<form method="post"
+										th:action="@{/houses/{houseId}/favorite/create(houseId=${stores.id})}"
+										id="favorite-form-add" class="d-none"></form>
+								</div>
+							</div>
+						</div>
+
+						<h1 class="mb-4 text-center" th:text="${stores != null ? stores.storeName : '店舗名'}">店舗名</h1>
+
+						<div th:if="${successMessage}" class="alert alert-info">
+							<span th:text="${successMessage}"></span>
+						</div>
+
+						<div th:if="${errorMessage}" class="alert alert-danger">
+							<span th:text="${errorMessage}"></span>
+						</div>
+
+						<!-- 現在の権限確認 -->
+						<p>現在のユーザーの権限: <span th:text="${#authentication.authorities}"></span></p>
+
+
+						<div class="mb-4">
+							<img th:if="${stores.getPhotoName() != null}"
+								th:src="@{/storage/__${stores.getPhotoName()}__}" class="w-100" alt="店舗画像">
+							<img th:unless="${stores.getPhotoName() != null}" th:src="@{/images/noImage.png}"
+								class="w-100" alt="NO IMAGE">
+						</div>
+
+						<div class="container">
+							<div class="row">
+								<div class="col-lg-8 container mb-4">
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">店舗名</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.storeName}"></span>
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">説明</span>
+										</div>
+										<div class="col">
+											<span class="nagoyameshi-pre-wrap" th:text="${stores.description}"></span>
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">営業時間</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.openHour}"></span> -
+											<span th:text="${stores.closeHour}"></span>
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">定休日</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.closeDay}"></span>
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">料金</span>
+										</div>
+										<div class="col">
+											<span
+												th:text="${#numbers.formatInteger(stores.minBudget, 1, 'COMMA')}"></span>円
+											～
+											<span
+												th:text="${#numbers.formatInteger(stores.maxBudget, 1, 'COMMA')}"></span>円
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">定員</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.seats}"></span> 人
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">郵便番号</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.storePostCode}"></span>
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">住所</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.storeAddress}"></span>
+										</div>
+									</div>
+									<div class="row pb-2 mb-2 border-bottom">
+										<div class="col-4">
+											<span class="fw-bold">電話番号</span>
+										</div>
+										<div class="col">
+											<span th:text="${stores.storePhoneNumber}"></span>
+										</div>
+									</div>
+								</div>
+
+
+								<div sec:authorize="isAnonymous()" class="col-lg-4 px-0 ps-lg-4 mb-4">
+									<div class="card">
+										<div class="card-body">
+											<p class="card-text">予約するには<a th:href="@{/login}">ログイン</a>が必要です。</p>
+											<button type="submit" class="btn text-white shadow-sm w-100 nagoyameshi-btn"
+												disabled>予約する</button>
+										</div>
+									</div>
+								</div>
+
+								<!-- 有料会員部分 -->
+								<div sec:authorize="hasRole('ROLE_PRIME')" class="col-lg-4 px-0 ps-lg-4 mb-4">
+									<div sec:authorize="isAuthenticated()">
+										<div class="card">
+											<div class="card-body">
+
+												<!-- 予約フォーム部分 -->
+												<form method="get"
+													th:action="@{/houses/__${stores.id}__/prime/reserve/input}"
+													th:object="${reserveInputForm}">
+													<div class="form-group mb-2">
+														<label for="fromCheckinDate" class="fw-bold">ご予約日</label>
+														<input type="text" class="form-control"
+															th:field="*{fromCheckinDate}" />
+													</div>
+													<div class="form-group mb-2">
+														<label for="fromCheckinTime" class="fw-bold">ご予約時間</label>
+														<input type="text" class="form-control"
+															th:field="*{fromCheckinTime}" />
+													</div>
+													<div class="form-group mb-4">
+														<label for="numberOfPeople" class="fw-bold">ご予約人数</label>
+														<input type="number" class="form-control"
+															th:field="*{numberOfPeople}" min="1" />
+													</div>
+													<button type="submit" class="btn btn-primary w-100">予約する</button>
+												</form>
+
+
+												<div th:if="${stores == null}" class="alert alert-danger">
+													<p>指定された店舗情報は存在しません。</p>
+												</div>
+
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- レビューセクション -->
+						<div sec:authorize="hasRole('ROLE_PRIME')">
+							<div class="container px-0">
+								<h2 class="mb-4 text-center">レビュー</h2>
+
+								<div sec:authorize="isAuthenticated()" class="row justify-content-center mb-4">
+									<div class="col-lg-4">
+										<a th:href="@{/houses/__${stores.id}__/prime/reviews/register}"
+											class="btn text-white shadow-sm w-100 nagoyameshi-btn">
+											レビューを投稿する
+										</a>
+									</div>
+								</div>
+								<div th:if="${#lists.isEmpty(newReview)}" class="mb-4">
+									<p class="text-center">まだレビューがありません。</p>
+								</div>
+								<div th:unless="${#lists.isEmpty(newReview)}"
+									class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+									<div th:each="review : ${newReview}">
+										<div class="col card card-body">
+											<div class="d-flex justify-content-between">
+												<h5 class="card-title" th:text="${review.getUsers().getUserName()}">
+												</h5>
+
+
+												<span sec:authorize="isAuthenticated()"
+													th:if="${#authentication.principal.user.id == review.getUsers().getId()}">
+
+
+
+
+													<a th:href="@{/houses/{storeId}/prime/reviews/{reviewId}/edit(storeId=${stores.id}, reviewId=${review.id})}"
+														class="me-2">編集</a>
+													<a href="#" class="nagoyameshi-link-danger" data-bs-toggle="modal"
+														th:data-bs-target="${'#deleteReviewModal' + review.getId()}">削除</a>
+
+
+
+
+													<!-- 削除用モーダル-->
+													<div class="modal fade"
+														th:id="${'deleteReviewModal' + review.getId()}" tabindex="-1"
+														th:aria-labelledby="${'deleteReviewModalLabel' + review.getId()}">
+														<div class="modal-dialog">
+															<div class="modal-content">
+																<div class="modal-header">
+																	<h5 class="modal-title"
+																		th:id="${'deleteReviewModalLabel' + review.getId()}"
+																		th:text="${review.getUsers() + 'のレビューを削除してもよろしいですか？'}">
+																	</h5>
+																	<button type="button" class="btn-close"
+																		data-bs-dismiss="modal"
+																		aria-label="閉じる"></button>
+																</div>
+																<div class="modal-footer">
+																	<form method="post"
+																		th:action="@{/houses/__${stores.getId()}__/review/__${review.getId()}__/delete}">
+																		<button type="submit"
+																			class="btn nagoyameshi-btn-danger text-white shadow-sm">削除</button>
+																	</form>
+																</div>
+															</div>
+														</div>
+													</div>
+
+
+												</span>
+											</div>
+											<p class="card-text mb-1">
+												<span class="nagoyameshi-star"
+													th:each="star : ${#numbers.sequence(1, 5)}"
+													th:text="${star <= review.getScore()} ? '&#9733;' : '&#9734;'"></span>
+											</p>
+											<p class="card-text"><small class="text-muted"
+													th:text="${#dates.format(review.getCreatedDate(), 'yyyy年MM月dd日')}"></small>
+											</p>
+											<p class="card-text" th:text="${review.getContent()}"></p>
+
+
+										</div>
+									</div>
+								</div>
+								<div class="text-center mb-4" th:if="${totalReviewCount > 1}">
+									<a th:href="@{/houses/__${stores.getId()}__/prime/reviews}">すべてのレビューを見る</a>
+								</div>
+							</div>
+						</div>
+
+
+
+
+
+
+
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<div th:replace="~{fragment :: footer}"></div>
+	</div>
+	<div th:replace="~{fragment :: scripts}"></div>
+
+
+	<!-- Flatpickr -->
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+	<script th:src="@{/js/flatpickr.js}"></script>
+</body>
+
+</html>

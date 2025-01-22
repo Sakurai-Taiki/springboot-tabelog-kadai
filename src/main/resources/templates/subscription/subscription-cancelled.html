@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragment :: meta}"></div>
+    <div th:replace="~{fragment :: styles}"></div>
+    <title>解約完了</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">解約が完了しました</h1>
+        <p class="text-center">ご利用いただきありがとうございました。</p>
+        <div class="text-center mt-4">
+            <a class="btn btn-primary" th:href="@{/}">トップページに戻る</a>
+        </div>
+    </div>
+</body>
+
+</html>
