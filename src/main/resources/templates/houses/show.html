@@ -63,10 +63,7 @@
 							<span th:text="${errorMessage}"></span>
 						</div>
 
-						<!-- 現在の権限確認 -->
-						<p>現在のユーザーの権限: <span th:text="${#authentication.authorities}"></span></p>
-
-
+					
 						<div class="mb-4">
 							<img th:if="${stores.getPhotoName() != null}"
 								th:src="@{/storage/__${stores.getPhotoName()}__}" class="w-100" alt="店舗画像">
