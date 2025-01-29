@@ -18,7 +18,7 @@ import com.example.kadai_002.repository.UsersRepository;
 import com.example.kadai_002.security.UsersDetailsImpl;
 import com.example.kadai_002.service.UsersService;
 
-@Controller
+@Controller 
 @RequestMapping("/users")
 public class UsersController {
 	private final UsersRepository usersRepository;  
