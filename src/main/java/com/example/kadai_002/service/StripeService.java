@@ -13,49 +13,50 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class StripeService {
-	
-	@Value("${stripe.api-key}")
+
+    @Value("${stripe.api-key}")
     private String stripeApiKey;
-	
-	 // セッションを作成し、Stripeに必要な情報を返す
+
     public String createStripeSession(String houseName, ReserveRegisterForm reserveRegisterForm, HttpServletRequest httpServletRequest) {
-    	Stripe.apiKey = stripeApiKey;
-        String requestUrl = new String(httpServletRequest.getRequestURL());
-        SessionCreateParams params =
-            SessionCreateParams.builder()
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .addLineItem(
-                    SessionCreateParams.LineItem.builder()
-                        .setPriceData(
-                            SessionCreateParams.LineItem.PriceData.builder()   
-                                .setProductData(
-                                    SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                        .setName(houseName)
-                                        .build())
-                                .setUnitAmount((long)reserveRegisterForm.getNumberOfPeople())
-                                .setCurrency("jpy")                                
-                                .build())
-                        .setQuantity(1L)
+        Stripe.apiKey = stripeApiKey;
+        String requestUrl = httpServletRequest.getRequestURL().toString();
+
+        String numberOfPeople = reserveRegisterForm.getNumberOfPeople() != null
+                ? reserveRegisterForm.getNumberOfPeople().toString()
+                : "0"; // デフォルト値を設定
+
+        SessionCreateParams params = SessionCreateParams.builder()
+            .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+            .addLineItem(SessionCreateParams.LineItem.builder()
+                .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
+                    .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                        .setName(houseName)
                         .build())
-                .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl(requestUrl.replaceAll("/houses/[0-9]+/reservations/confirm", "") + "/reservations?reserved")
-                .setCancelUrl(requestUrl.replace("/reservations/confirm", ""))
-                .setPaymentIntentData(
-                    SessionCreateParams.PaymentIntentData.builder()
-                        .putMetadata("houseId", reserveRegisterForm.getHouseId().toString())
-                        .putMetadata("userId", reserveRegisterForm.getUserId().toString())
-                        .putMetadata("checkinDate", reserveRegisterForm.getCheckinDate())
-                        .putMetadata("checkoutDate", reserveRegisterForm.getCheckinTime())
-                        .putMetadata("numberOfPeople", reserveRegisterForm.getNumberOfPeople().toString())
-                       
-                        .build())
-                .build();
+                    .setUnitAmount(100L)
+                    .setCurrency("jpy")
+                    .build())
+                .setQuantity(1L)
+                .build())
+            .setMode(SessionCreateParams.Mode.PAYMENT)
+            .setSuccessUrl(requestUrl.replace("/reservations/confirm", "/reservations?reserved"))
+            .setCancelUrl(requestUrl.replace("/reservations/confirm", ""))
+            .setPaymentIntentData(SessionCreateParams.PaymentIntentData.builder()
+                .putMetadata("houseId", reserveRegisterForm.getHouseId().toString())
+                .putMetadata("userId", reserveRegisterForm.getUserId().toString())
+                .putMetadata("checkinDate", reserveRegisterForm.getCheckinDate())
+                .putMetadata("checkoutDate", reserveRegisterForm.getCheckinTime())
+                .putMetadata("numberOfPeople", numberOfPeople)
+                .build())
+            .build();
+
         try {
             Session session = Session.create(params);
+            System.out.println("Stripe session created: " + session.getId());
             return session.getId();
         } catch (StripeException e) {
+            System.err.println("Error creating Stripe session: " + e.getMessage());
             e.printStackTrace();
-            return "";
+            return "/";
         }
-    } 
+    }
 }

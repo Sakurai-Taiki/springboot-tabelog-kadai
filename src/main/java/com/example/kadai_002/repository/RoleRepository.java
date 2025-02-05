@@ -1,9 +1,11 @@
 package com.example.kadai_002.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import com.example.kadai_002.entity.Role;
 
 public interface RoleRepository extends JpaRepository<Role, Integer> {
-	public Role findByName(String name);  
+    Optional<Role> findByName(String name);  
 }

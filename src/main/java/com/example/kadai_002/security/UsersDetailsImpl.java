@@ -20,10 +20,9 @@ public class UsersDetailsImpl implements UserDetails {
         return users;
     }
     
-    
-    //ユーザー名の取得
+    // ユーザー名の取得（ここでは表示名として userName を利用）
     public String getName() {
-        return users.getUserName(); // Usersエンティティの適切なフィールドを取得
+        return users.getUserName();
     }
     
     // ハッシュ化済みのパスワードを返す
@@ -38,38 +37,34 @@ public class UsersDetailsImpl implements UserDetails {
         return users.getMailAddress();
     }
     
-    // ロールのコレクションを返す
+    // ユーザーに付与されているロールなどの権限を返す
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-    	 System.out.println("ユーザー権限: " + authorities);
+        System.out.println("ユーザー権限: " + authorities);
         return authorities;
     }
     
-
-    
-    
-    // アカウントが期限切れでなければtrueを返す
+    // アカウントが期限切れでなければ true
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
     
-    // ユーザーがロックされていなければtrueを返す
+    // アカウントがロックされていなければ true
     @Override
     public boolean isAccountNonLocked() {
         return true;
-    }    
+    }
     
-    // ユーザーのパスワードが期限切れでなければtrueを返す
+    // パスワードが期限切れでなければ true
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
     
-    // ユーザーが有効であればtrueを返す
+    // ユーザーが有効であれば true
     @Override
     public boolean isEnabled() {
         return users.getEnabled();
     }
-    
 }

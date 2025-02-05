@@ -17,30 +17,30 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-        .authorizeHttpRequests((requests) -> requests
-                // すべてのユーザーがアクセス可能
-                .requestMatchers("/css/**", "/images/**", "/js/**", "/storage/**", "/", "/signup/**", "/houses", "/houses/{id}", "/houses/**","/stripe/webhook", "/reset").permitAll()
-                
-                // 有料会員のみアクセス可能
-                .requestMatchers("/prime/**").hasRole("PRIME")
-
-                // 管理者のみアクセス可能
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                // その他のページは認証を要求
-                .anyRequest().authenticated()
-            )
-            .formLogin((form) -> form
-                .loginPage("/login")               // ログインページ
-                .loginProcessingUrl("/login")      // ログインフォームの送信先
-                .defaultSuccessUrl("/?loggedIn")   // ログイン成功時のリダイレクト先
-                .failureUrl("/login?error")        // ログイン失敗時のリダイレクト先
-                .permitAll()
-            )
-            .logout((logout) -> logout
-                .logoutSuccessUrl("/?loggedOut")   // ログアウト時のリダイレクト先
-                .permitAll()
-            );
+          .authorizeHttpRequests(authz -> authz
+              .requestMatchers("/css/**", "/images/**", "/js/**", "/storage/**").permitAll()
+              .requestMatchers("/", "/signup/**", "/houses/**", "/reset").permitAll()
+              .requestMatchers("/webhook/stripe").permitAll()
+              .requestMatchers("/subscription/customer-portal").permitAll()
+              .requestMatchers("/subscription", "/create-checkout-session").authenticated()
+              .requestMatchers("/prime/**").hasRole("PRIME")
+              .requestMatchers("/admin/**").hasRole("ADMIN")
+              .anyRequest().authenticated()
+          )
+          .csrf(csrf -> csrf
+              .ignoringRequestMatchers("/webhook/stripe")
+          )
+          .formLogin(form -> form
+              .loginPage("/login")
+              .loginProcessingUrl("/login")
+              .defaultSuccessUrl("/?loggedIn")
+              .failureUrl("/login?error")
+              .permitAll()
+          )
+          .logout(logout -> logout
+              .logoutSuccessUrl("/?loggedOut")
+              .permitAll()
+          );
 
         return http.build();
     }
