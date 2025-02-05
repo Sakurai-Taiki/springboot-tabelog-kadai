@@ -100,7 +100,7 @@ public class AdminStoresController {
         model.addAttribute("imageName", imageName);
         model.addAttribute("storesEditForm", storesEditForm);
         
-        return "admin/Stores/edit";
+        return "admin/stores/edit";
     }    
     
     

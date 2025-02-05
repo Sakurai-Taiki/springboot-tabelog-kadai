@@ -1,6 +1,7 @@
 package com.example.kadai_002.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.kadai_002.entity.Category;
 import com.example.kadai_002.entity.Favorite;
@@ -131,5 +134,34 @@ public class HouseController {
         model.addAttribute("isFavorite", isFavorite);
 
         return "houses/show";
+    }
+    
+    
+    @PostMapping("/{storeId}/review/{reviewId}/delete")
+    public String deleteReview(
+        @PathVariable(name = "storeId") Integer storeId,
+        @PathVariable(name = "reviewId") Integer reviewId,
+        RedirectAttributes redirectAttributes) {
+
+        // レビューを取得
+        Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
+
+        if (reviewOptional.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "指定されたレビューが見つかりませんでした。");
+            return "redirect:/houses/" + storeId; // 該当ストアページにリダイレクト
+        }
+
+        // レビューがストアに属しているか確認
+        Review review = reviewOptional.get();
+        if (!review.getStores().getId().equals(storeId)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "このレビューは指定されたストアに属していません。");
+            return "redirect:/houses/" + storeId;
+        }
+
+        // レビューを削除
+        reviewRepository.deleteById(reviewId);
+        redirectAttributes.addFlashAttribute("successMessage", "レビューを削除しました。");
+
+        return "redirect:/houses/" + storeId; // 削除後、ストアページにリダイレクト
     }
 }

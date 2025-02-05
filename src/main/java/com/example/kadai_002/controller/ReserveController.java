@@ -1,5 +1,7 @@
 package com.example.kadai_002.controller;
 
+import java.time.LocalTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -78,6 +80,22 @@ public class ReserveController {
 	        bindingResult.addError(fieldError);
 	    }
 
+	    // 営業時間チェック
+	    if (reserveInputForm.getFromCheckinTime() != null) {
+	        LocalTime checkinTime;
+	        try {
+	            checkinTime = LocalTime.parse(reserveInputForm.getFromCheckinTime());
+	            if (!reserveService.isWithinBusinessHours(checkinTime, stores.getOpenHour(), stores.getCloseHour())) {
+	                FieldError fieldError = new FieldError(bindingResult.getObjectName(), "fromCheckinTime", "予約時間が営業時間外です。");
+	                bindingResult.addError(fieldError);
+	            }
+	        } catch (Exception e) {
+	            FieldError fieldError = new FieldError(bindingResult.getObjectName(), "fromCheckinTime", "予約時間の形式が正しくありません。");
+	            bindingResult.addError(fieldError);
+	        }
+	    }
+
+	    // エラーがある場合、ビューに戻る
 	    if (bindingResult.hasErrors()) {
 	        model.addAttribute("stores", stores);
 	        model.addAttribute("errorMessage", "予約内容に不備があります。");
@@ -124,21 +142,37 @@ public class ReserveController {
 	}
 	
 	
-	/* 
+	
 	@PostMapping("/houses/{id}/prime/reserve/create")
-	public String create(@ModelAttribute ReserveRegisterForm reserveRegisterForm) {
+	public String create(@PathVariable(name = "id") Integer id,
+	                     @ModelAttribute @Validated ReserveRegisterForm reserveRegisterForm,
+	                     BindingResult bindingResult,
+	                     RedirectAttributes redirectAttributes) {
+	    if (bindingResult.hasErrors()) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "予約情報に不備があります。");
+	        return "redirect:/houses/" + id + "/prime/reserve/confirm";
+	    }
+
 	    // デバッグログ
 	    System.out.println("Create - House ID: " + reserveRegisterForm.getHouseId());
 	    System.out.println("Create - User ID: " + reserveRegisterForm.getUserId());
-	    
-	    if (reserveRegisterForm.getHouseId() == null || reserveRegisterForm.getUserId() == null) {
-	        throw new IllegalArgumentException("House ID and User ID must not be null. Please check the form submission.");
+	    System.out.println("Create - Checkin Date: " + reserveRegisterForm.getCheckinDate());
+	    System.out.println("Create - Checkin Time: " + reserveRegisterForm.getCheckinTime());
+	    System.out.println("Create - Number of People: " + reserveRegisterForm.getNumberOfPeople());
+
+	    // サーバー側で予約情報を保存
+	    try {
+	        reserveService.create(reserveRegisterForm);
+	    } catch (Exception e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "予約の保存中にエラーが発生しました。");
+	        return "redirect:/houses/" + id + "/prime/reserve/confirm";
 	    }
 
-	    reserveService.create(reserveRegisterForm);        
-	    return "redirect:/prime/reserve?reserved";
+	    // 成功メッセージを設定し、一覧画面へリダイレクト
+	    redirectAttributes.addFlashAttribute("successMessage", "予約が完了しました！");
+	    return "redirect:/prime/reserve";
 	}
-	*/
+	
 	
 	@PostMapping("prime/reserve/{storesId}/delete")
     public String delete(@PathVariable(name = "storesId") Integer id, RedirectAttributes redirectAttributes) {        

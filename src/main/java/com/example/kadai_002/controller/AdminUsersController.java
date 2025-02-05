@@ -65,7 +65,7 @@ public class AdminUsersController {
          
          model.addAttribute("usersEditForm", usersEditForm);
          
-         return "admin/Users/edit";
+         return "admin/users/edit";
      }    
      
      

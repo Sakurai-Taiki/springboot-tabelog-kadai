@@ -101,7 +101,7 @@ public class AdminCategoryController {
 	         model.addAttribute("imageName", imageName);
 	         model.addAttribute("categoryEditForm", categoryEditForm);
 	         
-	         return "admin/Category/edit";
+	         return "admin/category/edit";
 	     }    
 	     
 	     
