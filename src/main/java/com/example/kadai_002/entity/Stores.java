@@ -44,10 +44,10 @@ public class Stores {
     @Column(name = "max_budget")
     private Integer maxBudget;
 
-    @Column(name = "open_hour")
+    @Column(name = "open_hour", nullable = false)
     private LocalTime openHour;
 
-    @Column(name = "close_hour")
+    @Column(name = "close_hour", nullable = false)
     private LocalTime closeHour;
 
     @Column(name = "store_post_code")
@@ -62,7 +62,7 @@ public class Stores {
     @Column(name = "close_day")
     private String closeDay;
 
-    @Column(name = "seats")
+    @Column(name = "seats", nullable = false)
     private Integer seats;
 
     @Column(name = "create_date", insertable = false, updatable = false)
@@ -70,14 +70,30 @@ public class Stores {
 
     @Column(name = "update_date", insertable = false, updatable = false)
     private Timestamp updatedDate;
-    
+
     @Column(nullable = false)
     private Boolean enabled = true;
 
+    /**
+     * カテゴリ設定時にカテゴリ名を自動設定
+     */
     public void setCategory(Category category) {
         this.category = category;
         if (category != null) {
-            this.categoryName = category.getCategoryName(); // 自動設定
+            this.categoryName = category.getCategoryName();
         }
+    }
+
+    /**
+     * 指定された時間が予約可能時間内であるかをチェックする
+     * 
+     * @param time チェックする時間
+     * @return 予約可能時間内の場合はtrue、それ以外はfalse
+     */
+    public boolean isReservationTimeValid(LocalTime time) {
+        if (time == null) {
+            return false;
+        }
+        return !time.isBefore(openHour) && !time.isAfter(closeHour);
     }
 }
