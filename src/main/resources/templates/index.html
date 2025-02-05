@@ -11,7 +11,7 @@
 
 <body>
 	<div class="nagoyameshi-wrapper">
-		
+
 		<!-- ヘッダー -->
 		<div th:replace="~{fragment :: header}"></div>
 
@@ -23,6 +23,12 @@
 
 				<div th:if="${param.loggedOut}" class="alert alert-info">
 					ログアウトしました。
+				</div>
+				<div th:if="${successMessage}" class="alert alert-success">
+					<p th:text="${successMessage}"></p>
+				</div>
+				<div th:if="${errorMessage}" class="alert alert-danger">
+					<p th:text="${errorMessage}"></p>
 				</div>
 
 
@@ -37,7 +43,7 @@
 				</div>
 
 
-				
+
 				<div class="card mb-3">
 					<div class="card-header">
 						カテゴリから探す

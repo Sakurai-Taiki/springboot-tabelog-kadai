@@ -1,76 +1,46 @@
 <!DOCTYPE html>
 <html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
-	<div th:replace="~{fragment :: meta}"></div>
-	<div th:replace="~{fragment :: styles}"></div>
-	<meta name="_csrf" th:content="${_csrf.token}" />
-	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
-	<title>NagoyaMeshi</title>
+    <div th:replace="~{fragment :: meta}"></div>
+    <div th:replace="~{fragment :: styles}"></div>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title>NagoyaMeshi</title>
 </head>
 
 <body>
-	<div class="nagoyameshi-wrapper">
-		<!-- ヘッダー -->
-		<div th:replace="~{fragment :: header}"></div>
+    <div class="nagoyameshi-wrapper">
+        <!-- ヘッダー -->
+        <div th:replace="~{fragment :: header}"></div>
 
-		<main>
-			<div class="container nagoyameshi-container pb-5">
-				<div class="row justify-content-center">
-					<nav class="my-3" style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-						<ol class="breadcrumb mb-0">
-							<li class="breadcrumb-item"><a th:href="@{/}">ホーム</a></li>
-							<li class="breadcrumb-item active" aria-current="page">有料プラン解約</li>
-						</ol>
-					</nav>
+        <main>
+            <div class="container nagoyameshi-container pb-5">
+                <div class="row justify-content-center">
+                    <nav class="my-3" style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a th:href="@{/}">ホーム</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">有料プラン登録キャンセル</li>
+                        </ol>
+                    </nav>
 
-					<h1 class="mb-3 text-center">有料プラン解約</h1>
+                    <h1 class="mb-3 text-center">有料プラン登録がキャンセルについて</h1>
 
+                    <p class="text-center">決済は行われませんでした。またのご利用をお待ちしています。</p>
 
-					<p>有料プランを解約すると以下の特典を受けられなくなります。</br>本当に解約してもよろしいですか？</p>
+         
 
-					<!-- 有料プランの説明 -->
-					<div class="card mb-4">
-						<div class="card-header text-center">
-							有料プランの内容
-						</div>
-						<ul class="list-group list-group-flush">
-							<li class="list-group-item">・当日の2時間前までならいつでも予約可能</li>
-							<li class="list-group-item">・店舗をお好きなだけお気に入りに追加可能</li>
-							<li class="list-group-item">・レビューを全件閲覧可能</li>
-							<li class="list-group-item">・レビューを投稿可能</li>
-							<li class="list-group-item">・月額たったの300円</li>
-						</ul>
-					</div>
+                    <p class="text-center">
+                        <a class="btn btn-primary" th:href="@{/}">ホームへ戻る</a>
+                    </p>
 
-					<hr class="mb-4">
+                </div>
+            </div>
+        </main>
 
-					<!-- エラーメッセージ表示エリア -->
-					<div id="card-error" class="alert alert-danger" style="display:none;"></div>
+        <!-- フッター -->
+        <div th:replace="~{fragment :: footer}"></div>
+    </div>
 
-					<!-- 解約フォーム -->
-					<form id="cardForm" th:action="@{/cancel-subscription}" method="post">
-						<input type="hidden" name="_token" th:value="${_csrf.token}">
-						<input type="hidden" name="subscriptionId" th:value="${subscriptionId}"><!-- サブスクリプションIDを追加 -->
-						<div class="form-group d-flex justify-content-center">
-							<button id="cancel-button" class="btn btn-danger text-white shadow-sm w-50">解約</button>
-						</div>
-					</form>
-					<!-- エラーメッセージ表示エリア -->
-					<div id="cancel-error" class="alert alert-danger mt-3" style="display:none;"></div>
-
-				</div>
-			</div>
-		</main>
-
-		<!-- フッター -->
-		<div th:replace="~{fragment :: footer}"></div>
-	</div>
-
-	<div th:replace="~{fragment :: scripts}"></div>
-
-	<script src="https://js.stripe.com/v3/"></script>
-
+    <div th:replace="~{fragment :: scripts}"></div>
 </body>
-
 </html>

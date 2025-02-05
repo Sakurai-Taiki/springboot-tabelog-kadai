@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <div th:replace="~{fragment :: meta}"></div>
+    <div th:replace="~{fragment :: styles}"></div>
+
+    <!-- CSRFトークンをメタタグとして埋め込み -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <title>NagoyaMeshi</title>
+</head>
+<body>
+<div class="nagoyameshi-wrapper">
+    <!-- ヘッダー -->
+    <div th:replace="~{fragment :: header}"></div>
+
+    <main>
+        <div class="container nagoyameshi-container pb-5">
+            <div class="row justify-content-center">
+                <nav class="my-3" style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/}">ホーム</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page" sec:authorize="hasRole('ROLE_GENERAL')">有料プラン登録</li>
+                        <li class="breadcrumb-item active" aria-current="page" sec:authorize="hasRole('ROLE_PRIME')">有料プラン解約</li>
+                    </ol>
+                </nav>
+
+                
+                <div sec:authorize="hasRole('ROLE_GENERAL')">
+                <h1 class="mb-3 text-center">有料プラン登録</h1>
+                <p>有料プランを登録すると以下の特典を受け取れます。</p>
+                </div>
+                
+                
+                <div sec:authorize="hasRole('ROLE_PRIME')">
+                <h1 class="mb-3 text-center">有料プラン解約</h1>
+                <p>有料プランを登録すると以下の特典を受け取れなくなります。</p>
+                </div>
+
+                <!-- 有料プランの説明 -->
+                <div class="card mb-4">
+                    <div class="card-header text-center">
+                        有料プランの内容
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">・当日の2時間前までならいつでも予約可能</li>
+                        <li class="list-group-item">・店舗をお好きなだけお気に入りに追加可能</li>
+                        <li class="list-group-item">・レビューを全件閲覧可能</li>
+                        <li class="list-group-item">・レビューを投稿可能</li>
+                        <li class="list-group-item">・月額たったの300円</li>
+                    </ul>
+                </div>
+
+                <hr class="mb-4">
+
+                <!-- エラーメッセージ表示エリア -->
+                <div id="card-error" class="alert alert-danger" style="display:none;"></div>
+
+                <!-- Stripe Checkoutを開始するボタン -->
+                <div class="form-group d-flex justify-content-center mb-4" sec:authorize="hasRole('ROLE_GENERAL')">
+                    <button id="checkout-button" class="btn btn-danger text-white shadow-sm w-50">
+                        サブスクリプションを登録する
+                    </button>
+                </div>
+
+                <!-- ▼▼ 新しく追加する解約フォーム ▼▼ -->
+                <!-- 解約時には userEmail を送信し、/subscription/cancel-subscription を呼び出す -->
+                <div class="text-center" sec:authorize="hasRole('ROLE_PRIME')">
+                    <form th:if="${#authentication.authenticated}" action="/subscription/cancel-subscription" method="POST" class="d-inline">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="userEmail" th:value="${#authentication.getPrincipal().username}" />
+                        <button type="submit" class="btn btn-danger text-white shadow-sm w-50" onclick="return confirm('本当に解約しますか？');">
+                            サブスクリプションを解約する
+                        </button>
+                    </form>
+                </div>
+                <!-- ▲▲ ここまで解約フォーム ▲▲ -->
+
+                <div id="cancel-error" class="alert alert-danger mt-3" style="display:none;"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <div th:replace="~{fragment :: footer}"></div>
+</div>
+
+<div th:replace="~{fragment :: scripts}"></div>
+
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+  // Stripe の公開可能キーを指定
+  const stripe = Stripe('pk_test_51QJQLVFoKQ3torxMB1X4ARDwjc16EJx5v5E96bUy7nWAr0G5Yjeegh38FBEfXsTKzVbqLneYzcAEgmBARt1y4trL00ThM6o4D9');
+
+  // CSRFトークンをメタタグから取得
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+  // 「サブスクリプションを登録する」ボタン
+  document.getElementById('checkout-button').addEventListener('click', () => {
+    fetch('/subscription/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        [csrfHeader]: csrfToken
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        alert('エラーが発生しました:' + data.error);
+      } else {
+        stripe.redirectToCheckout({ sessionId: data.sessionId });
+      }
+    })
+    .catch(error => {
+      alert('通信エラーが発生しました:' + error);
+    });
+  });
+</script>
+</body>
+</html>
