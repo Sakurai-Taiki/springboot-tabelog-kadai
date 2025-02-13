@@ -47,13 +47,13 @@ footer {
 }
 
 .nagoyameshi-logo {
-	height: 30px;
+	height: 40px;
 }
 
 .nagoyameshi-btn {
 	background-color: #5196a6 !important;
 	transition: 0.1s;
-	margin: 4px;
+	margin: 0px;
 }
 
 .nagoyameshi-btn:hover {
@@ -125,9 +125,12 @@ footer {
    object-fit: cover;
  }
  
- .nagoyameshi-search-form {
-     max-width: 300px;
- }
+.nagoyameshi-search-form {
+    width: 100%;
+    /* 必要に応じて、最大幅を nagoyameshi-container と合わせる例 */
+    max-width: 1200px;
+    margin: 0 auto;  /* 中央寄せ */
+}
 
  .nagoyameshi-star {
      color: #ffa500;
@@ -141,4 +144,120 @@ footer {
 	.nagoyameshi-container {
 		max-width: 1200px;
 	}
+}
+
+.card-holder-name {
+	    font-family: sans-serif;
+    outline: none;
+    }
+	
+.card-holder-name, .card-element {
+    border-radius: .375rem;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    height: 44px;
+    width: 100%;
+    background: white;
+   }
+.login {
+	width: max-content;
+} 
+
+/* スライダーコンテナは相対位置 */
+#imageSlider {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* ビューポートの高さに合わせる */
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 3000ms ease-in-out;  /* 遷移時間（conf.speed）と合わせる */
+}
+
+.slide.current {
+  opacity: 1;
+}
+
+/* 画像がコンテナ全体をカバーするように */
+#sliderImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 1s ease-in-out;
+      opacity: 1;
+}
+
+#sliderImage.fade-out {
+      opacity: 0;
+    }
+
+/* ナビゲーションは上部に配置 */
+.slider-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+}
+
+/* 検索フォームは下部に配置 */
+#imageSlider .slider-search {
+  position: absolute;
+  bottom: 10%; /* 画像下部から10%上に配置（調整可） */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px;
+  border-radius: 5px;
+  z-index: 20;
+}
+
+/* スクロール誘導ボタンのスタイル */
+.rsttop-header-scroll {
+  position: absolute;
+  bottom: 0%; /* 画像の一番下に近い位置（調整可） */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  text-align: center;
+}
+
+.rsttop-header-scroll__target {
+  text-decoration: none;
+  color: #fff;
+  font-size: 20px;
+  display: inline-block;
+}
+
+.rsttop-header-scroll__line {
+  display: block;
+  width: 2px;
+  height: 40px;
+  margin: 0 auto 5px;
+  background-color: #fff;
+  animation: scroll 2s infinite;
+}
+
+@keyframes scroll {
+  0% { opacity: 10; transform: translateY(0); }
+  50% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 0; transform: translateY(0); }
+}
+
+.sub-title {
+	margin: 0 auto;
+	padding-top: 3px;
+	
+}
+
+.rsttop-header-scroll__text {
+  display: block;
 }
